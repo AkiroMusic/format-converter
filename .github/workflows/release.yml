@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npx electron-vite build
       - run: npx electron-builder --win
         env:
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npx electron-vite build
       - run: npx electron-builder --mac --x64 --arm64
         env:
