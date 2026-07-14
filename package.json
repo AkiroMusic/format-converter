@@ -37,7 +37,89 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "fileAssociations": [
+        {
+          "ext": ".ncm",
+          "name": "Netease Crypted Music",
+          "description": "网易云音乐 NCM 文件"
+        },
+        {
+          "ext": ".qmc0",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC0 文件"
+        },
+        {
+          "ext": ".qmc3",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC3 文件"
+        },
+        {
+          "ext": ".qmcflac",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC FLAC 文件"
+        },
+        {
+          "ext": ".qmcogg",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC OGG 文件"
+        },
+        {
+          "ext": ".qmc1",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC1 文件"
+        },
+        {
+          "ext": ".qmc2",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC2 文件"
+        },
+        {
+          "ext": ".mflac",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MFLAC 文件"
+        },
+        {
+          "ext": ".mflac0",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MFLAC0 文件"
+        },
+        {
+          "ext": ".mgg",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MGG 文件"
+        },
+        {
+          "ext": ".kgm",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 KGM 文件"
+        },
+        {
+          "ext": ".kgma",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 KGMA 文件"
+        },
+        {
+          "ext": ".kgg",
+          "name": "Kugou Music Crypted v5",
+          "description": "酷狗音乐 KGG 文件"
+        },
+        {
+          "ext": ".vpr",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 VPR 文件"
+        },
+        {
+          "ext": ".tkm",
+          "name": "QQ Music Crypted",
+          "description": "QQ音乐 TKM 文件"
+        },
+        {
+          "ext": ".kwm",
+          "name": "Kuwo Music Crypted",
+          "description": "酷我音乐 KWM 文件"
+        }
+      ]
     },
     "mac": {
       "target": [
@@ -46,22 +128,86 @@
       "icon": "build/icon.png",
       "category": "public.app-category.utilities",
       "fileAssociations": [
-        { "ext": ".ncm", "name": "Netease Crypted Music", "description": "网易云音乐 NCM 文件" },
-        { "ext": ".qmc0", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC0 文件" },
-        { "ext": ".qmc3", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC3 文件" },
-        { "ext": ".qmcflac", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC FLAC 文件" },
-        { "ext": ".qmcogg", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC OGG 文件" },
-        { "ext": ".qmc1", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC1 文件" },
-        { "ext": ".qmc2", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC2 文件" },
-        { "ext": ".mflac", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC 文件" },
-        { "ext": ".mflac0", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC0 文件" },
-        { "ext": ".mgg", "name": "QQ Music Crypted v2", "description": "QQ音乐 MGG 文件" },
-        { "ext": ".kgm", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGM 文件" },
-        { "ext": ".kgma", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGMA 文件" },
-        { "ext": ".kgg", "name": "Kugou Music Crypted v5", "description": "酷狗音乐 KGG 文件" },
-        { "ext": ".vpr", "name": "Kugou Music Crypted", "description": "酷狗音乐 VPR 文件" },
-        { "ext": ".tkm", "name": "QQ Music Crypted", "description": "QQ音乐 TKM 文件" },
-        { "ext": ".kwm", "name": "Kuwo Music Crypted", "description": "酷我音乐 KWM 文件" }
+        {
+          "ext": ".ncm",
+          "name": "Netease Crypted Music",
+          "description": "网易云音乐 NCM 文件"
+        },
+        {
+          "ext": ".qmc0",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC0 文件"
+        },
+        {
+          "ext": ".qmc3",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC3 文件"
+        },
+        {
+          "ext": ".qmcflac",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC FLAC 文件"
+        },
+        {
+          "ext": ".qmcogg",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC OGG 文件"
+        },
+        {
+          "ext": ".qmc1",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC1 文件"
+        },
+        {
+          "ext": ".qmc2",
+          "name": "QQ Music Crypted v1",
+          "description": "QQ音乐 QMC2 文件"
+        },
+        {
+          "ext": ".mflac",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MFLAC 文件"
+        },
+        {
+          "ext": ".mflac0",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MFLAC0 文件"
+        },
+        {
+          "ext": ".mgg",
+          "name": "QQ Music Crypted v2",
+          "description": "QQ音乐 MGG 文件"
+        },
+        {
+          "ext": ".kgm",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 KGM 文件"
+        },
+        {
+          "ext": ".kgma",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 KGMA 文件"
+        },
+        {
+          "ext": ".kgg",
+          "name": "Kugou Music Crypted v5",
+          "description": "酷狗音乐 KGG 文件"
+        },
+        {
+          "ext": ".vpr",
+          "name": "Kugou Music Crypted",
+          "description": "酷狗音乐 VPR 文件"
+        },
+        {
+          "ext": ".tkm",
+          "name": "QQ Music Crypted",
+          "description": "QQ音乐 TKM 文件"
+        },
+        {
+          "ext": ".kwm",
+          "name": "Kuwo Music Crypted",
+          "description": "酷我音乐 KWM 文件"
+        }
       ]
     },
     "nsis": {
@@ -70,43 +216,37 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Format Converter",
-      "artifactName": "Format-Converter-Setup-${version}.${ext}",
-      "fileAssociations": [
-        { "ext": ".ncm", "name": "Netease Crypted Music", "description": "网易云音乐 NCM 文件" },
-        { "ext": ".qmc0", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC0 文件" },
-        { "ext": ".qmc3", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC3 文件" },
-        { "ext": ".qmcflac", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC FLAC 文件" },
-        { "ext": ".qmcogg", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC OGG 文件" },
-        { "ext": ".qmc1", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC1 文件" },
-        { "ext": ".qmc2", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC2 文件" },
-        { "ext": ".mflac", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC 文件" },
-        { "ext": ".mflac0", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC0 文件" },
-        { "ext": ".mgg", "name": "QQ Music Crypted v2", "description": "QQ音乐 MGG 文件" },
-        { "ext": ".kgm", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGM 文件" },
-        { "ext": ".kgma", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGMA 文件" },
-        { "ext": ".kgg", "name": "Kugou Music Crypted v5", "description": "酷狗音乐 KGG 文件" },
-        { "ext": ".vpr", "name": "Kugou Music Crypted", "description": "酷狗音乐 VPR 文件" },
-        { "ext": ".tkm", "name": "QQ Music Crypted", "description": "QQ音乐 TKM 文件" },
-        { "ext": ".kwm", "name": "Kuwo Music Crypted", "description": "酷我音乐 KWM 文件" }
-      ]
+      "artifactName": "Format-Converter-Setup-${version}.${ext}"
     },
     "dmg": {
       "artifactName": "Format-Converter-${version}.${ext}",
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "extraResources": [
       {
         "from": "resources/extra/",
         "to": "extra",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "resources/ffmpeg/${platform}",
         "to": "ffmpeg/${platform}",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   },
