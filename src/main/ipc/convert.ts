@@ -15,7 +15,7 @@ import * as ncm from "../../core/ncmDecrypt"
 import * as decoders from "../../core/decoders"
 import { writeID3Tags } from "../../core/id3Writer"
 import { renderFilenameTemplate } from "../../core/template"
-import { run, FfmpegOptions } from "../ffmpeg"
+import { run, runFfmpeg, FfmpegOptions } from "../ffmpeg"
 import { HistoryStore } from "../history"
 import { settingsStore } from "./settings"
 
@@ -123,6 +123,18 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
           }
         }
 
+        /**
+         * Write cover image to a temp file and return its path, or null.
+         */
+        async function writeCoverTemp(image: Uint8Array): Promise<string | null> {
+          if (!image || image.length === 0) return null
+          const coverDir = mkdtempSync(join(tmpdir(), "fc-cover-"))
+          const ext = detectImageMime(image) === "image/png" ? "png" : "jpg"
+          const coverPath = join(coverDir, `cover.${ext}`)
+          await writeFile(coverPath, Buffer.from(image))
+          return coverPath
+        }
+
         sendProgress(0.05)
 
         const ext = extname(filePath).toLowerCase()
@@ -224,18 +236,30 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
 
         sendProgress(0.65)
 
+        // --- Build metadata for FFmpeg ---
+        const ffmpegMetadata: Record<string, string> = {}
+        if (songName && songName !== "Unknown") ffmpegMetadata.title = songName
+        if (artist && artist !== "Unknown") ffmpegMetadata.artist = artist
+        if (album && album !== "Unknown") ffmpegMetadata.album = album
+
         // --- Transcode via FFmpeg if target format differs from source ---
         if (effectiveFormat !== sourceFormat) {
           tempDir = mkdtempSync(join(tmpdir(), "fc-convert-"))
           const tempInputPath = join(tempDir, "input." + sourceFormat)
           await writeFile(tempInputPath, Buffer.from(audio))
 
+          // Write cover image to temp file if available
+          let coverPath: string | null = null
+          try { coverPath = await writeCoverTemp(coverImage) } catch { /* non-fatal */ }
+
           const ffmpegOpts: FfmpegOptions = {
             format: effectiveFormat as FfmpegOptions["format"],
             onProgress: (p: number): void => {
               sendProgress(0.65 + p * 0.33)
             },
-            signal: controller.signal
+            signal: controller.signal,
+            metadata: Object.keys(ffmpegMetadata).length > 0 ? ffmpegMetadata : undefined,
+            coverImagePath: coverPath ?? undefined
           }
 
           if (bitrate) ffmpegOpts.bitrate = bitrate
@@ -253,21 +277,54 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
           await run(tempInputPath, outputPath, ffmpegOpts)
         } else {
           // --- Direct copy (same format, no transcoding) ---
-          const audioWithTags = sourceFormat === "mp3"
-            ? writeID3Tags(
-                {
-                  title: songName,
-                  artist,
-                  album,
-                  image: coverImage
-                    ? { imageBuffer: coverImage, mime: detectImageMime(coverImage) }
-                    : undefined
-                },
-                audio
-              )
-            : audio
+          if (sourceFormat === "mp3") {
+            // For MP3: use the fast manual ID3 tag writer (prepends tags to raw data)
+            const audioWithTags = writeID3Tags(
+              {
+                title: songName,
+                artist,
+                album,
+                image: coverImage
+                  ? { imageBuffer: coverImage, mime: detectImageMime(coverImage) }
+                  : undefined
+              },
+              audio
+            )
+            await writeFile(outputPath, Buffer.from(audioWithTags))
+          } else if (coverImage || Object.keys(ffmpegMetadata).length > 0) {
+            // For non-MP3 formats (FLAC, OGG, etc.) with metadata: use FFmpeg to remux
+            // with metadata without re-encoding (-c copy).
+            tempDir = mkdtempSync(join(tmpdir(), "fc-convert-"))
+            const tempInputPath = join(tempDir, "input." + sourceFormat)
+            await writeFile(tempInputPath, Buffer.from(audio))
 
-          await writeFile(outputPath, Buffer.from(audioWithTags))
+            let coverPath: string | null = null
+            try { coverPath = await writeCoverTemp(coverImage) } catch { /* non-fatal */ }
+
+            const args: string[] = [
+              '-y', '-i', tempInputPath, '-map', '0:a',
+              '-map_metadata', '-1'
+            ]
+
+            if (coverPath) {
+              args.push('-i', coverPath, '-map', '1:0', '-disposition:v', 'attached_pic')
+            }
+
+            if (sourceFormat === "mp3" || sourceFormat === "m4a" || sourceFormat === "aac") {
+              args.push('-write_id3v2', '1')
+            }
+
+            for (const [key, value] of Object.entries(ffmpegMetadata)) {
+              if (value) args.push('-metadata', `${key}=${value}`)
+            }
+
+            args.push('-c', 'copy', outputPath)
+
+            await runFfmpeg(args, { signal: controller.signal })
+          } else {
+            // No metadata to write — just dump the raw audio
+            await writeFile(outputPath, Buffer.from(audio))
+          }
         }
 
         sendProgress(1.0)
