@@ -1,11 +1,57 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore, FileEntry } from '../store/useAppStore'
+
+/**
+ * Rough estimate of output file size based on input format and target output format.
+ * Returns estimated bytes, or undefined when hard to estimate (e.g. dynamic bitrate from source).
+ */
+function estimateOutputSize(
+  inputSize: number,
+  outputFormat: string,
+  bitrate: string,
+  vbrEnabled: boolean,
+  vbrQuality: number
+): number | undefined {
+  if (inputSize <= 0) return undefined
+
+  const lossyFormats = ['mp3', 'm4a', 'aac', 'ogg', 'opus']
+  const pcmFormats = ['wav', 'aiff']
+  const loselessFormats = ['flac', 'alac']
+
+  if (outputFormat === 'source') return inputSize
+
+  const lossyRatioByBitrate: Record<string, number> = {
+    '128k': 0.12,
+    '192k': 0.15,
+    '256k': 0.20,
+    '320k': 0.25
+  }
+
+  if (lossyFormats.includes(outputFormat)) {
+    const ratio = lossyRatioByBitrate[bitrate] ?? 0.15
+    // VBR is usually ~20% smaller than CBR at equivalent quality
+    const vbrAdjust = vbrEnabled ? 0.8 : 1.0
+    return Math.round(inputSize * ratio * vbrAdjust)
+  }
+
+  if (loselessFormats.includes(outputFormat)) {
+    // FLAC/ALAC typically compress to 50-70% of PCM/WAV
+    return Math.round(inputSize * 0.6)
+  }
+
+  if (pcmFormats.includes(outputFormat)) {
+    // PCM is usually 2-3x of compressed input. We estimate high since we don't know duration.
+    return Math.round(inputSize * 2)
+  }
+
+  return undefined
+}
 
 function DropZone(): JSX.Element {
   const { t } = useTranslation()
@@ -37,13 +83,38 @@ function DropZone(): JSX.Element {
     [addFiles]
   )
 
+  const handleFilesAddedWithEstimate = useCallback(
+    (paths: string[]) => {
+      const outputFormat = settings.outputFormat
+      const bitrate = settings.bitrate || '192k'
+      const vbrEnabled = settings.vbrEnabled || false
+      const vbrQuality = settings.vbrQuality ?? 5
+
+      const entries: FileEntry[] = paths.map((path) => {
+        const parts = path.replace(/\\/g, '/').split('/')
+        const fileName = parts[parts.length - 1]
+        return {
+          id: crypto.randomUUID(),
+          filePath: path,
+          fileName,
+          fileSize: 0,
+          status: 'pending',
+          progress: 0,
+          estimatedOutputSize: estimateOutputSize(0, outputFormat, bitrate, vbrEnabled, vbrQuality)
+        }
+      })
+      addFiles(entries)
+    },
+    [addFiles, settings.outputFormat, settings.bitrate, settings.vbrEnabled, settings.vbrQuality]
+  )
+
   const handleClick = useCallback(async () => {
     if (isConverting) return
-    const paths = await window.ncmConverter.selectNcmFiles()
+    const paths = await window.formatConverter.selectFiles()
     if (paths.length > 0) {
-      handleFilesAdded(paths)
+      handleFilesAddedWithEstimate(paths)
     }
-  }, [handleFilesAdded, isConverting])
+  }, [handleFilesAddedWithEstimate, isConverting])
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -73,9 +144,16 @@ function DropZone(): JSX.Element {
       const files = Array.from(e.dataTransfer.files)
       const paths: string[] = []
 
+      const supportedExtensions = [
+        '.ncm', '.kwm', '.kgm', '.kgma', '.vpr',
+        '.qmc0', '.qmc3', '.qmcflac', '.qmcogg', '.qmc1', '.qmc2', '.tkm',
+        '.mp3', '.flac', '.wav', '.m4a', '.aac', '.ogg', '.opus'
+      ]
+
       for (const file of files) {
-        if (file.name.toLowerCase().endsWith('.ncm')) {
-          const path = window.ncmConverter.getPathForFile(file)
+        const ext = '.' + file.name.split('.').pop()?.toLowerCase()
+        if (supportedExtensions.includes(ext)) {
+          const path = window.formatConverter.getPathForFile(file)
           if (path) paths.push(path)
         }
       }
@@ -83,22 +161,22 @@ function DropZone(): JSX.Element {
       if (paths.length > 0) {
         // Ensure output directory is selected
         if (!outputDir) {
-          window.ncmConverter.selectFolder().then((dir) => {
+          window.formatConverter.selectFolder().then((dir) => {
             if (dir) {
               setOutputDir(dir)
-              handleFilesAdded(paths)
+              handleFilesAddedWithEstimate(paths)
             }
           })
         } else {
-          handleFilesAdded(paths)
+          handleFilesAddedWithEstimate(paths)
         }
       }
     },
-    [handleFilesAdded, isConverting, outputDir, setOutputDir]
+    [handleFilesAddedWithEstimate, isConverting, outputDir, setOutputDir]
   )
 
   const handleSelectOutputDir = useCallback(async () => {
-    const dir = await window.ncmConverter.selectFolder()
+    const dir = await window.formatConverter.selectFolder()
     if (dir) {
       setOutputDir(dir)
     }
@@ -161,7 +239,7 @@ function DropZone(): JSX.Element {
                 key={opt.value}
                 onClick={() => {
                   setOutputFormat(opt.value)
-                  window.ncmConverter.setSettings({ outputFormat: opt.value })
+                  window.formatConverter.setSettings({ outputFormat: opt.value })
                 }}
                 style={{
                   padding: '4px 10px',
@@ -221,6 +299,59 @@ function DropZone(): JSX.Element {
           {t('dropzone.hint')}
         </div>
       </div>
+
+      {/* Supported formats info */}
+      <div
+        style={{
+          marginTop: 'var(--space-4)',
+          padding: '12px 16px',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: 'var(--surface-1)',
+          border: '1px solid var(--border)',
+          fontSize: '12px',
+          lineHeight: 1.6
+        }}
+      >
+        <div style={{ color: 'var(--text-secondary)', fontWeight: 500, marginBottom: '8px' }}>
+          {t('dropzone.supportedFormats')}:
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+          <FormatBadge ext=".ncm" label="NCM" desc={t('format.ncm')} />
+          <FormatBadge ext=".kwm" label="KWM" desc={t('format.kwm')} />
+          <FormatBadge ext=".kgm" label="KGM/KGMA/VPR" desc={t('format.kgm')} />
+          <FormatBadge ext=".qmc" label="QMC v1" desc={t('format.qmc')} />
+          <FormatBadge ext=".mflac" label="MFLAC/MGG/KGG" desc={t('format.phase2')} dimmed />
+          <FormatBadge ext=".mp3/.flac/.wav" label="MP3/FLAC/WAV" desc="Plain audio" />
+          <FormatBadge ext=".m4a/.aac/.ogg/.opus" label="M4A/AAC/OGG/Opus" desc="Plain audio" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FormatBadge({ ext, label, desc, dimmed }: { ext: string; label: string; desc: string; dimmed?: boolean }): JSX.Element {
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+        opacity: dimmed ? 0.5 : 1
+      }}
+    >
+      <code
+        style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '11px',
+          padding: '1px 5px',
+          borderRadius: '3px',
+          backgroundColor: 'var(--surface-2)',
+          color: dimmed ? 'var(--text-tertiary)' : 'var(--accent)'
+        }}
+      >
+        {ext}
+      </code>
+      <span style={{ color: 'var(--text-tertiary)' }}>{desc}</span>
     </div>
   )
 }

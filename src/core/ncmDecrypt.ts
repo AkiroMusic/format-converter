@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -230,6 +230,27 @@ export function detectAudioFormat(data: Uint8Array): AudioFormat {
   }
   if (data[0] === 0x4f && data[1] === 0x67 && data[2] === 0x67 && data[3] === 0x53) return { ext: 'ogg', mime: 'audio/ogg' };
   return { ext: 'mp3', mime: 'audio/mpeg' };
+}
+
+import { type DecoderModule } from './types'
+
+export const ncmDecoder: DecoderModule = {
+  name: 'NCM Decoder',
+  extensions: ['.ncm'],
+  requiresKey: false,
+  decode: async (arrayBuffer, options) => {
+    const result = await parseNCM(arrayBuffer, options)
+    return {
+      audioData: result.audioData,
+      format: result.format,
+      metadata: result.metadata,
+      image: result.image,
+      imageMime: result.imageMime,
+      songName: result.songName,
+      artist: result.artist,
+      album: result.album,
+    }
+  },
 }
 
 export function base64ToUint8Array(base64: string): Uint8Array {

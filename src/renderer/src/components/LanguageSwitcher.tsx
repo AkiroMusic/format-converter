@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -9,16 +9,15 @@ import { useAppStore } from '../store/useAppStore'
 
 function LanguageSwitcher(): JSX.Element {
   const { i18n, t } = useTranslation()
-  const settings = useAppStore((s) => s.settings)
   const setSettings = useAppStore((s) => s.setSettings)
 
-  const currentLang = settings.language || i18n.language || 'zh-CN'
+  const currentLang = i18n.language || 'zh-CN'
 
   const toggleLanguage = useCallback(async () => {
     const newLang = currentLang === 'zh-CN' ? 'en-US' : 'zh-CN'
     await i18n.changeLanguage(newLang)
     setSettings({ language: newLang })
-    window.ncmConverter?.setSettings({ language: newLang }).catch(() => {})
+    window.formatConverter?.setSettings({ language: newLang }).catch(() => {})
   }, [currentLang, i18n, setSettings])
 
   return (
@@ -38,7 +37,7 @@ function LanguageSwitcher(): JSX.Element {
       }}
       title={t('language.switch')}
     >
-      {currentLang === 'zh-CN' ? 'EN' : '中'}
+      {currentLang === 'zh-CN' ? 'EN' : 'CN'}
     </button>
   )
 }

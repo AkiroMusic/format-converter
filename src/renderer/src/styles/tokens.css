@@ -56,6 +56,70 @@
   --error: #FF3B30;
 }
 
+/* ===== Sepia Theme ===== */
+[data-theme='sepia'] {
+  --bg-base: #EDE0CC;
+  --surface-1: #F5ECD8;
+  --surface-2: #E3D4BC;
+  --border: #CAB892;
+  --text-primary: #3A2C1A;
+  --text-secondary: #7A6A4A;
+  --text-tertiary: #A89878;
+  --accent: #C9A24B;
+  --accent-hover: #B89130;
+  --accent-secondary: #D4893B;
+  --success: #5A8A6A;
+  --error: #C45A4A;
+}
+
+/* ===== Forest Theme ===== */
+[data-theme='forest'] {
+  --bg-base: #283A24;
+  --surface-1: #324830;
+  --surface-2: #3C5438;
+  --border: #4E6446;
+  --text-primary: #E0EDD8;
+  --text-secondary: #8A9E80;
+  --text-tertiary: #5A7050;
+  --accent: #6CC96C;
+  --accent-hover: #7ED87E;
+  --accent-secondary: #5ABB9A;
+  --success: #4FAE6A;
+  --error: #D9695F;
+}
+
+/* ===== Ocean Theme ===== */
+[data-theme='ocean'] {
+  --bg-base: #162544;
+  --surface-1: #1E3050;
+  --surface-2: #283C60;
+  --border: #3A4E70;
+  --text-primary: #E2E8F0;
+  --text-secondary: #8DA0C0;
+  --text-tertiary: #5A6E90;
+  --accent: #50C8F0;
+  --accent-hover: #6DD4FF;
+  --accent-secondary: #8A96FF;
+  --success: #4AAF8A;
+  --error: #E86A5F;
+}
+
+/* ===== Lavender Theme ===== */
+[data-theme='lavender'] {
+  --bg-base: #241E38;
+  --surface-1: #2E2745;
+  --surface-2: #383052;
+  --border: #4A3E6E;
+  --text-primary: #ECE6F5;
+  --text-secondary: #B0A0D0;
+  --text-tertiary: #7A6A9A;
+  --accent: #B89DFF;
+  --accent-hover: #CAB0FF;
+  --accent-secondary: #F0A0D8;
+  --success: #6AAF8A;
+  --error: #E86A7A;
+}
+
 /* Font Face Declarations - fonts to be placed in assets/fonts/ */
 @font-face {
   font-family: 'Fraunces';

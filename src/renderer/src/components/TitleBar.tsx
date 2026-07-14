@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -13,6 +13,7 @@ function TitleBar(): JSX.Element {
   const settings = useAppStore((s) => s.settings)
   const setSettings = useAppStore((s) => s.setSettings)
   const [platform, setPlatform] = useState<'win32' | 'darwin' | 'other'>('other')
+  const [isMaximized, setIsMaximized] = useState(false)
 
   useEffect(() => {
     // Detect platform via userAgent
@@ -20,6 +21,25 @@ function TitleBar(): JSX.Element {
     if (ua.includes('win')) setPlatform('win32')
     else if (ua.includes('mac')) setPlatform('darwin')
     else setPlatform('other')
+  }, [])
+
+  // Track maximize state + F11 fullscreen
+  useEffect(() => {
+    window.formatConverter?.isMaximized().then(setIsMaximized)
+    const unsub = window.formatConverter?.onMaximizeChange(setIsMaximized)
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'F11') {
+        e.preventDefault()
+        window.formatConverter?.toggleFullscreen()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      unsub?.()
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   // Apply stored theme on mount
@@ -31,11 +51,11 @@ function TitleBar(): JSX.Element {
     const newTheme = settings.theme === 'dark' ? 'light' : 'dark'
     setSettings({ theme: newTheme })
     document.documentElement.dataset.theme = newTheme
-    window.ncmConverter?.setSettings({ theme: newTheme })
+    window.formatConverter?.setSettings({ theme: newTheme })
   }, [settings.theme, setSettings])
 
   const handleMinimize = (): void => {
-    window.ncmConverter?.minimizeWindow()
+    window.formatConverter?.minimizeWindow()
   }
 
   const handleClose = (): void => {
@@ -44,38 +64,37 @@ function TitleBar(): JSX.Element {
 
   return (
     <div
-      className="flex items-center"
       style={{
+        display: 'flex',
+        alignItems: 'center',
         height: '36px',
         backgroundColor: 'var(--surface-1)',
         borderBottom: '1px solid var(--border)',
         WebkitAppRegion: 'drag',
         WebkitUserSelect: 'none',
-        position: 'relative',
-        flexShrink: 0
+        flexShrink: 0,
+        position: 'relative'
       }}
     >
-      {/* macOS traffic light spacing (keeps left side balanced) */}
-      {platform === 'darwin' && <div style={{ width: '78px', height: '100%' }} />}
+      {/* macOS traffic light spacing */}
+      {platform === 'darwin' && <div style={{ width: '78px', flexShrink: 0 }} />}
 
-      {/* Title / Wordmark — truly centered via absolute positioning */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontFamily: "'Fraunces', serif",
-          fontSize: '14px',
-          color: 'var(--accent)',
-          letterSpacing: '0.5px',
-          whiteSpace: 'nowrap'
-        }}
-      >
-        {t('app.title')}
+      {/* Title — centered via flex */}
+      <div style={{ flex: 1, textAlign: 'center', overflow: 'hidden' }}>
+        <span
+          style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: '14px',
+            color: 'var(--accent)',
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {t('app.title')}
+        </span>
       </div>
 
-      {/* Right-side controls */}
+      {/* Right-side controls (absolute, out of flex flow — keeps title centered) */}
       <div
         style={{
           position: 'absolute',
@@ -148,6 +167,33 @@ function TitleBar(): JSX.Element {
               ─
             </button>
             <button
+              onClick={() => window.formatConverter?.toggleMaximize()}
+              style={{
+                width: '46px',
+                height: '36px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px'
+              }}
+              title={t(isMaximized ? 'titlebar.restore' : 'titlebar.maximize')}
+            >
+              {isMaximized ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="2" y="4" width="10" height="8" rx="1" />
+                  <path d="M4 4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-1" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1.5" y="1.5" width="11" height="11" rx="1.5" />
+                </svg>
+              )}
+            </button>
+            <button
               onClick={handleClose}
               style={{
                 width: '46px',
@@ -159,8 +205,11 @@ function TitleBar(): JSX.Element {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '14px'
+                fontSize: '14px',
+                transition: 'background-color 100ms ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e81123'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               title={t('titlebar.close')}
             >
               ✕

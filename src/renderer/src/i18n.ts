@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -13,9 +13,11 @@ i18n.use(initReactI18next).init({
     'zh-CN': { translation: zhCN },
     'en-US': { translation: enUS }
   },
-  lng: 'zh-CN',
+  lng: 'en-US',
   fallbackLng: 'en-US',
   interpolation: {
+    prefix: '{',
+    suffix: '}',
     escapeValue: false
   }
 })

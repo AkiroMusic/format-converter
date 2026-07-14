@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -19,6 +19,19 @@ export interface FileEntry {
   coverImageBase64?: string
   outputPath?: string
   errorMessage?: string
+  estimatedOutputSize?: number
+}
+
+export interface Preset {
+  id: string
+  name: string
+  outputFormat: string
+  bitrate: string
+  vbrEnabled: boolean
+  vbrQuality: number
+  compressionLevel: number
+  sampleRate: string
+  bitDepth: string
 }
 
 export interface AppSettings {
@@ -29,6 +42,19 @@ export interface AppSettings {
   outputFormat: string
   concurrentLimit: number
   duplicateAction: string
+  bitrate: string
+  vbrEnabled: boolean
+  vbrQuality: number
+  compressionLevel: number
+  sampleRate: string
+  bitDepth: string
+  qmcEkey: string
+  kggKeyImportPath: string
+  autoConcurrent: boolean
+  notificationsEnabled: boolean
+  selectedPreset: string
+  presets: Preset[]
+  customFfmpegPath?: string
 }
 
 interface AppState {
@@ -40,6 +66,7 @@ interface AppState {
   outputDir: string | null
   selectedIds: string[]
   volume: number
+  cancellingFiles: string[]
 
   // Actions
   addFiles: (entries: FileEntry[]) => void
@@ -72,25 +99,68 @@ interface AppState {
 
   // Player
   setVolume: (volume: number) => void
+
+  // Cancel
+  cancelFile: (filePath: string) => void
+
+  // FFmpeg status
+  ffmpegAvailable: boolean
+  setFfmpegAvailable: (available: boolean) => void
+
+  // Pause / Resume
+  isPaused: boolean
+  setPaused: (paused: boolean) => void
+
+  // Quality settings
+  setBitrate: (bitrate: string) => void
+  setVbrEnabled: (enabled: boolean) => void
+  setVbrQuality: (quality: number) => void
+  setCompressionLevel: (level: number) => void
+  setSampleRate: (rate: string) => void
+  setBitDepth: (depth: string) => void
+  setQmcEkey: (ekey: string) => void
+  setAutoConcurrent: (enabled: boolean) => void
 }
+
+const DEFAULT_PRESETS: Preset[] = [
+  { id: 'standard', name: 'Standard', outputFormat: 'source', bitrate: '320k', vbrEnabled: false, vbrQuality: 0, compressionLevel: 5, sampleRate: 'original', bitDepth: 'original' },
+  { id: 'podcast', name: 'Podcast', outputFormat: 'mp3', bitrate: '128k', vbrEnabled: true, vbrQuality: 5, compressionLevel: 0, sampleRate: '44100', bitDepth: 'original' },
+  { id: 'hifi', name: 'Hi-Fi', outputFormat: 'flac', bitrate: '320k', vbrEnabled: false, vbrQuality: 0, compressionLevel: 8, sampleRate: 'original', bitDepth: 'original' },
+  { id: 'archive', name: 'Archive', outputFormat: 'flac', bitrate: '320k', vbrEnabled: false, vbrQuality: 0, compressionLevel: 12, sampleRate: 'original', bitDepth: '24' }
+]
 
 export const useAppStore = create<AppState>((set) => ({
   files: [],
   stats: { total: 0, success: 0, fail: 0 },
   settings: {
-    language: 'zh-CN',
+    language: 'en-US',
     outputDir: '',
     filenameTemplate: '{artist} - {title}',
     theme: 'dark',
     outputFormat: 'source',
     concurrentLimit: 3,
-    duplicateAction: 'rename'
+    duplicateAction: 'rename',
+    bitrate: '320k',
+    vbrEnabled: false,
+    vbrQuality: 0,
+    compressionLevel: 5,
+    sampleRate: 'original',
+    bitDepth: 'original',
+    qmcEkey: '',
+    kggKeyImportPath: '',
+    autoConcurrent: true,
+    notificationsEnabled: true,
+    selectedPreset: 'standard',
+    presets: DEFAULT_PRESETS
   },
   isConverting: false,
   currentPreviewId: null,
   outputDir: null,
   selectedIds: [],
   volume: 0.7,
+  cancellingFiles: [],
+  ffmpegAvailable: true,
+  isPaused: false,
 
   addFiles: (entries) =>
     set((state) => ({
@@ -282,5 +352,80 @@ export const useAppStore = create<AppState>((set) => ({
     }),
 
   // === New: Player volume ===
-  setVolume: (volume) => set({ volume })
+  setVolume: (volume) => set({ volume }),
+
+  // === FFmpeg status ===
+  setFfmpegAvailable: (available) => set({ ffmpegAvailable: available }),
+
+  // === Pause / Resume ===
+  setPaused: (paused) => set({ isPaused: paused }),
+
+  // === Cancel ===
+  cancelFile: (filePath) =>
+    set((state) => {
+      window.formatConverter.cancelConvert(filePath).catch(() => {})
+      return {
+        cancellingFiles: [...state.cancellingFiles, filePath],
+        files: state.files.map((f) =>
+          f.filePath === filePath ? { ...f, status: 'pending' as const } : f
+        )
+      }
+    }),
+
+  // === Quality settings ===
+  setBitrate: (bitrate) =>
+    set((state) => {
+      const newSettings = { ...state.settings, bitrate }
+      window.formatConverter.setSettings({ bitrate }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setVbrEnabled: (vbrEnabled) =>
+    set((state) => {
+      const newSettings = { ...state.settings, vbrEnabled }
+      window.formatConverter.setSettings({ vbrEnabled }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setVbrQuality: (vbrQuality) =>
+    set((state) => {
+      const newSettings = { ...state.settings, vbrQuality }
+      window.formatConverter.setSettings({ vbrQuality }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setCompressionLevel: (compressionLevel) =>
+    set((state) => {
+      const newSettings = { ...state.settings, compressionLevel }
+      window.formatConverter.setSettings({ compressionLevel }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setSampleRate: (sampleRate) =>
+    set((state) => {
+      const newSettings = { ...state.settings, sampleRate }
+      window.formatConverter.setSettings({ sampleRate }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setBitDepth: (bitDepth) =>
+    set((state) => {
+      const newSettings = { ...state.settings, bitDepth }
+      window.formatConverter.setSettings({ bitDepth }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setQmcEkey: (qmcEkey) =>
+    set((state) => {
+      const newSettings = { ...state.settings, qmcEkey }
+      window.formatConverter.setSettings({ qmcEkey }).catch(() => {})
+      return { settings: newSettings }
+    }),
+
+  setAutoConcurrent: (autoConcurrent) =>
+    set((state) => {
+      const newSettings = { ...state.settings, autoConcurrent }
+      window.formatConverter.setSettings({ autoConcurrent }).catch(() => {})
+      return { settings: newSettings }
+    })
 }))

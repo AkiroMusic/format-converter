@@ -33,3 +33,6 @@ release/
 # Environment
 .env
 .env.local
+
+# Bundled FFmpeg binaries (downloaded by scripts/download-ffmpeg.mjs)
+resources/ffmpeg/

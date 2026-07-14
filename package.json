@@ -1,7 +1,7 @@
 {
-  "name": "ncm-format-converter",
+  "name": "format-converter",
   "version": "1.0.0",
-  "description": "NCM Format Converter - NetEase Cloud Music decryption tool",
+  "description": "Format Converter - Multi-format audio conversion tool",
   "main": "./out/main/index.js",
   "author": "Akiro",
   "license": "GPL-3.0-only",
@@ -15,11 +15,13 @@
     "build:win": "electron-vite build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "postinstall": "electron-builder install-app-deps"
+    "download:ffmpeg": "node scripts/download-ffmpeg.mjs",
+    "download:ffmpeg:all": "node scripts/download-ffmpeg.mjs --all",
+    "postinstall": "node scripts/download-ffmpeg.mjs"
   },
   "build": {
-    "appId": "com.akiro.ncm-converter",
-    "productName": "NCM Format Converter",
+    "appId": "com.akiro.format-converter",
+    "productName": "Format Converter",
     "copyright": "Copyright (c) 2026 Akiro",
     "directories": {
       "output": "release"
@@ -42,23 +44,71 @@
         "dmg"
       ],
       "icon": "build/icon.png",
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "fileAssociations": [
+        { "ext": ".ncm", "name": "Netease Crypted Music", "description": "网易云音乐 NCM 文件" },
+        { "ext": ".qmc0", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC0 文件" },
+        { "ext": ".qmc3", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC3 文件" },
+        { "ext": ".qmcflac", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC FLAC 文件" },
+        { "ext": ".qmcogg", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC OGG 文件" },
+        { "ext": ".qmc1", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC1 文件" },
+        { "ext": ".qmc2", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC2 文件" },
+        { "ext": ".mflac", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC 文件" },
+        { "ext": ".mflac0", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC0 文件" },
+        { "ext": ".mgg", "name": "QQ Music Crypted v2", "description": "QQ音乐 MGG 文件" },
+        { "ext": ".kgm", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGM 文件" },
+        { "ext": ".kgma", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGMA 文件" },
+        { "ext": ".kgg", "name": "Kugou Music Crypted v5", "description": "酷狗音乐 KGG 文件" },
+        { "ext": ".vpr", "name": "Kugou Music Crypted", "description": "酷狗音乐 VPR 文件" },
+        { "ext": ".tkm", "name": "QQ Music Crypted", "description": "QQ音乐 TKM 文件" },
+        { "ext": ".kwm", "name": "Kuwo Music Crypted", "description": "酷我音乐 KWM 文件" }
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "NCM Format Converter",
-      "artifactName": "NCM-Format-Converter-Setup-${version}.${ext}"
+      "shortcutName": "Format Converter",
+      "artifactName": "Format-Converter-Setup-${version}.${ext}",
+      "fileAssociations": [
+        { "ext": ".ncm", "name": "Netease Crypted Music", "description": "网易云音乐 NCM 文件" },
+        { "ext": ".qmc0", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC0 文件" },
+        { "ext": ".qmc3", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC3 文件" },
+        { "ext": ".qmcflac", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC FLAC 文件" },
+        { "ext": ".qmcogg", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC OGG 文件" },
+        { "ext": ".qmc1", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC1 文件" },
+        { "ext": ".qmc2", "name": "QQ Music Crypted v1", "description": "QQ音乐 QMC2 文件" },
+        { "ext": ".mflac", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC 文件" },
+        { "ext": ".mflac0", "name": "QQ Music Crypted v2", "description": "QQ音乐 MFLAC0 文件" },
+        { "ext": ".mgg", "name": "QQ Music Crypted v2", "description": "QQ音乐 MGG 文件" },
+        { "ext": ".kgm", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGM 文件" },
+        { "ext": ".kgma", "name": "Kugou Music Crypted", "description": "酷狗音乐 KGMA 文件" },
+        { "ext": ".kgg", "name": "Kugou Music Crypted v5", "description": "酷狗音乐 KGG 文件" },
+        { "ext": ".vpr", "name": "Kugou Music Crypted", "description": "酷狗音乐 VPR 文件" },
+        { "ext": ".tkm", "name": "QQ Music Crypted", "description": "QQ音乐 TKM 文件" },
+        { "ext": ".kwm", "name": "Kuwo Music Crypted", "description": "酷我音乐 KWM 文件" }
+      ]
     },
     "dmg": {
-      "artifactName": "NCM-Format-Converter-${version}.${ext}",
+      "artifactName": "Format-Converter-${version}.${ext}",
       "contents": [
         { "x": 130, "y": 220 },
         { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
       ]
-    }
+    },
+    "extraResources": [
+      {
+        "from": "resources/extra/",
+        "to": "extra",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "resources/ffmpeg/${platform}",
+        "to": "ffmpeg/${platform}",
+        "filter": ["**/*"]
+      }
+    ]
   },
   "dependencies": {
     "jszip": "^3.10.1",
@@ -66,7 +116,8 @@
     "react-dom": "^18.3.1",
     "react-i18next": "^15.4.1",
     "i18next": "^24.2.2",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "sql.js": "^1.11.0"
   },
   "devDependencies": {
     "@electron-toolkit/utils": "^3.0.0",
@@ -82,6 +133,7 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite": "^5.4.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@types/sql.js": "^1.4.9"
   }
 }

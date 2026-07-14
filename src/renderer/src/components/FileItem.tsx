@@ -1,5 +1,5 @@
 /**
- * NCM Format Converter
+ * Format Converter
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
@@ -28,6 +28,7 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
   const selectedIds = useAppStore((s) => s.selectedIds)
   const toggleSelect = useAppStore((s) => s.toggleSelect)
   const retryFile = useAppStore((s) => s.retryFile)
+  const cancelFile = useAppStore((s) => s.cancelFile)
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
 
@@ -109,7 +110,7 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
     if (file.status === 'success' && file.outputPath) {
       items.push({
         label: t('actions.showInFolder'),
-        onClick: () => { window.ncmConverter.revealInFolder(file.outputPath!) },
+        onClick: () => { window.formatConverter.revealInFolder(file.outputPath!) },
         icon: (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
@@ -263,7 +264,16 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
             color: file.status === 'success' ? 'var(--success)' : file.status === 'error' ? 'var(--error)' : 'var(--text-secondary)'
           }}
         >
-          {file.status === 'pending' && `${t('status.pending')}${file.fileSize > 0 ? ' · ' + formatFileSize(file.fileSize) : ''}`}
+          {file.status === 'pending' && (
+            <>
+              {`${t('status.pending')}${file.fileSize > 0 ? ' · ' + formatFileSize(file.fileSize) : ''}`}
+              {file.estimatedOutputSize != null && file.estimatedOutputSize > 0 && (
+                <span style={{ marginLeft: '8px', color: 'var(--text-tertiary)' }}>
+                  {t('sizeEstimate.label', { size: formatFileSize(file.estimatedOutputSize) })}
+                </span>
+              )}
+            </>
+          )}
           {file.status === 'converting' && `${t('status.converting')} ${Math.round(file.progress * 100)}%`}
           {file.status === 'success' && (
             <>
@@ -355,6 +365,37 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             )}
+          </button>
+        )}
+        {file.status === 'converting' && (
+          <button
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation()
+              cancelFile(file.filePath)
+            }}
+            style={{
+              width: '36px',
+              height: '36px',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+              color: 'var(--error)',
+              transition: 'all 150ms ease',
+              opacity: 0.7
+            }}
+            title={t('actions.cancel')}
+            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.opacity = '1' }}
+            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.opacity = '0.7' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
           </button>
         )}
         <button

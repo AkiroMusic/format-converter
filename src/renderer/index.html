@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NCM Format Converter</title>
+  <title id="app-title">Format Converter</title>
+  <script>
+    // Set initial lang from localStorage to avoid flash
+    try {
+      var saved = JSON.parse(localStorage.getItem('format-converter-settings') || '{}')
+      document.documentElement.lang = saved.language === 'zh-CN' ? 'zh-CN' : 'en'
+    } catch(e) {}
+  </script>
 </head>
 <body>
   <div id="root"></div>

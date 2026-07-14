@@ -1,71 +1,121 @@
-# NCM Format Converter
+# Format Converter
 
-网易云音乐 `.ncm` 文件解密与格式转换工具，基于 Electron 构建。
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-## 功能
+A cross-platform desktop audio format converter built with Electron. Decrypts and converts proprietary music formats (NCM, KWM, KGM, QMC) to standard MP3/FLAC with full metadata preservation.
 
-- **解密** — 将 `.ncm` 文件还原为 MP3 / FLAC
-- **批量转换** — 多文件并行处理，实时进度显示
-- **元数据保留** — 自动写入封面、标题、艺术家、专辑等 ID3 标签
-- **文件名模板** — 自定义输出文件名格式（支持 `{title}`、`{artist}`、`{album}` 等变量）
-- **音频预览** — 内置播放器，支持上一首 / 下一首、音量调节
-- **双主题** — 深色 / 浅色模式一键切换
-- **国际化** — 简体中文 / English
+## Features
 
-## 下载
+- **Multi-format Support** — Decrypt `.ncm` (NetEase Cloud Music), `.kwm`/`.kgm` (Kuwo/Kugou), `.qmc` (QQ Music) to MP3 or FLAC
+- **Batch Processing** — Queue hundreds of files, process with configurable concurrency, real-time progress bars
+- **Metadata Preservation** — Automatically writes title, artist, album, cover art, track number, genre, and year as ID3v2 tags
+- **Audio Preview** — Built-in player with play queue, previous/next, volume control, and seek
+- **Custom File Naming** — Flexible template system with `{title}`, `{artist}`, `{album}`, `{track}`, `{year}` variables
+- **Conversion History** — Persistent history with filtering by status, clear, and retry
+- **Dark & Light Themes** — System-following default, manual toggle
+- **i18n** — English & 简体中文 (Chinese), auto-detected or user-selected
+- **Zero Configuration** — FFmpeg is bundled in the installer, no manual setup needed
 
-从 [Releases](https://github.com/AkiroMusic/ncm-format-converter/releases) 获取最新版本：
+## Downloads
 
-| 平台 | 文件 |
-|------|------|
-| Windows | `NCM-Format-Converter-Setup-1.0.0.exe` |
-| macOS (Intel + Apple Silicon) | `NCM-Format-Converter-1.0.0.dmg` |
+Grab the latest installer from the [Releases](https://github.com/AkiroMusic/format-converter/releases) page.
 
-## 使用
+| Platform | File |
+|----------|------|
+| Windows (x64) | `Format-Converter-Setup-1.0.0.exe` |
+| macOS (Intel + Apple Silicon) | `Format-Converter-1.0.0.dmg` |
 
-1. 打开应用，将 `.ncm` 文件拖入窗口或点击选择
-2. 在设置面板中选择输出格式（MP3 / FLAC）和并发数量
-3. 点击转换按钮开始处理
-4. 完成后可在输出目录中找到转换后的文件
+## Keyboard Shortcuts
 
-### 快捷键
+| Action | Shortcut |
+|--------|----------|
+| Paste file(s) from clipboard | `Ctrl+V` |
+| Remove selected files | `Delete` |
+| Select all | `Ctrl+A` |
 
-| 操作 | 快捷键 |
-|------|--------|
-| 粘贴文件 | `Ctrl + V` |
-| 删除选中 | `Delete` |
-| 全选 | `Ctrl + A` |
+## Screenshots
 
-## 开发
+> _Coming soon_
+
+## Development
+
+### Prerequisites
+
+- Node.js 22+
+- npm 10+
+
+### Setup
 
 ```bash
-# 安装依赖
+# Clone the repository
+git clone https://github.com/AkiroMusic/format-converter.git
+cd format-converter
+
+# Install dependencies (FFmpeg binaries are downloaded automatically)
 npm install
-
-# 启动开发模式
-npm run dev
-
-# 运行测试
-npm test
-
-# 构建安装包
-npm run build:win    # Windows
-npm run build:mac    # macOS
-npm run build:linux  # Linux
 ```
 
-## 技术栈
+### Commands
 
-| 层 | 技术 |
-|----|------|
-| 框架 | Electron 33 + electron-vite |
-| 前端 | React 18 + TypeScript + Tailwind CSS |
-| 状态管理 | Zustand |
-| 国际化 | i18next + react-i18next |
-| 加密 | Node.js crypto (AES-128-ECB / RC4) |
-| 标签写入 | 原生 ID3v2 实现 |
-| 构建 | electron-builder (NSIS / DMG) |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Launch development mode (Vite HMR + Electron) |
+| `npm run build` | Build production bundles (main + preload + renderer) |
+| `npm test` | Run test suite (Vitest) |
+| `npm run typecheck` | TypeScript type checking |
+| `npm run lint` | Lint all source files (ESLint + oxlint) |
+| `npm run download:ffmpeg` | Download FFmpeg for the current platform |
+| `npm run download:ffmpeg:all` | Download FFmpeg for all platforms (win32, darwin, linux) |
+| `npm run build:win` | Build Windows installer (NSIS) |
+| `npm run build:mac` | Build macOS disk image (DMG) |
+| `npm run build:linux` | Build Linux AppImage |
 
-## 许可证
+### Tech Stack
 
-[GPL-3.0-only](LICENSE)
+| Layer | Technology |
+|-------|------------|
+| Framework | Electron 33 + electron-vite |
+| Frontend | React 18 + TypeScript + Tailwind CSS |
+| State | Zustand |
+| i18n | i18next + react-i18next |
+| Encryption | Node.js crypto (AES-128-ECB, RC4) |
+| Tag Writing | Native ID3v2 implementation |
+| Testing | Vitest |
+| Packaging | electron-builder (NSIS / DMG / AppImage) |
+
+### Project Structure
+
+```
+src/
+├── main/               # Electron main process
+│   ├── ipc/            # IPC handlers (convert, dialog, settings, history, etc.)
+│   ├── ffmpeg.ts       # FFmpeg/FFprobe wrapper
+│   ├── ffmpeg-path.ts  # Platform-aware FFmpeg binary path resolution
+│   ├── ffmpeg-check.ts # FFmpeg health check
+│   ├── kggKeys.ts      # Kugou decryption key management
+│   ├── history.ts      # Conversion history persistence
+│   ├── simpleStore.ts  # JSON-backed key-value store
+│   └── window.ts       # BrowserWindow creation & management
+├── renderer/           # Electron renderer process (React app)
+│   └── src/
+│       ├── components/ # React components (FileList, SettingsPanel, PlayerBar, etc.)
+│       ├── store/      # Zustand stores
+│       ├── locales/    # i18n JSON files (en-US, zh-CN)
+│       └── styles/     # CSS tokens + Tailwind utilities
+├── core/               # Shared core logic
+│   ├── decoders/       # Per-format decryption implementations
+│   ├── ncmDecrypt.ts   # NetEase Cloud Music (.ncm) decryption
+│   ├── kgmDecrypt.ts   # Kugou (.kgm) decryption
+│   ├── kwmDecrypt.ts   # Kuwo (.kwm) decryption
+│   ├── qmcDecrypt.ts   # QQ Music (.qmc) decryption
+│   ├── decoderRouter.ts# Format detection & decoder dispatch
+│   ├── id3Writer.ts    # ID3v2 tag writer
+│   ├── template.ts     # File name template engine
+│   ├── types.ts        # Shared type definitions
+│   └── convertPipeline.ts # Conversion pipeline orchestration
+└── preload/            # Electron preload scripts
+```
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).

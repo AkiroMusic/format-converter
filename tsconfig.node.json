@@ -1,4 +1,4 @@
-{
+﻿{
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
@@ -6,6 +6,8 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "strict": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "skipLibCheck": true,
     "outDir": "./out",
     "types": ["electron-vite/node"]
