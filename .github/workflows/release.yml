@@ -27,6 +27,7 @@ jobs:
         with:
           name: release-windows
           path: release/
+          retention-days: 1
           if-no-files-found: error
 
   build-mac:
@@ -46,6 +47,7 @@ jobs:
         with:
           name: release-macos
           path: release/
+          retention-days: 1
           if-no-files-found: error
 
   release:
