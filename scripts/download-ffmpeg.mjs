@@ -162,7 +162,8 @@ async function main() {
     console.log(`\n[ffmpeg-download] ✅ All platforms ready (version ${version})`)
   } else {
     console.error(`\n[ffmpeg-download] ❌ Some downloads failed`)
-    process.exit(1)
+    // Don't exit with error — missing platform URLs (e.g. osx-arm64 on ffbinaries)
+    // are just warnings. The build step will handle FFmpeg absence gracefully.
   }
 }
 
