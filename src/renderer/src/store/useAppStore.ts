@@ -55,6 +55,9 @@ export interface AppSettings {
   selectedPreset: string
   presets: Preset[]
   customFfmpegPath?: string
+  embedCompanionLyrics: boolean
+  loudnormEnabled: boolean
+  loudnormTarget: number
 }
 
 interface AppState {
@@ -151,7 +154,10 @@ export const useAppStore = create<AppState>((set) => ({
     autoConcurrent: true,
     notificationsEnabled: true,
     selectedPreset: 'standard',
-    presets: DEFAULT_PRESETS
+    presets: DEFAULT_PRESETS,
+    embedCompanionLyrics: true,
+    loudnormEnabled: false,
+    loudnormTarget: -14
   },
   isConverting: false,
   currentPreviewId: null,
