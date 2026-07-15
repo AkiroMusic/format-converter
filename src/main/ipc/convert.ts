@@ -131,11 +131,10 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
         /**
          * Write cover image to a temp file and return its path, or null.
          */
-        async function writeCoverTemp(image: Uint8Array): Promise<string | null> {
+        async function writeCoverTemp(image: Uint8Array, targetDir: string): Promise<string | null> {
           if (!image || image.length === 0) return null
-          const coverDir = mkdtempSync(join(tmpdir(), "fc-cover-"))
           const ext = detectImageMime(image) === "image/png" ? "png" : "jpg"
-          const coverPath = join(coverDir, `cover.${ext}`)
+          const coverPath = join(targetDir, `cover.${ext}`)
           await writeFile(coverPath, Buffer.from(image))
           return coverPath
         }
@@ -268,7 +267,7 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
 
           // Write cover image to temp file if available
           let coverPath: string | null = null
-          try { coverPath = await writeCoverTemp(coverImage) } catch { /* non-fatal */ }
+          try { coverPath = await writeCoverTemp(coverImage, tempDir!) } catch { /* non-fatal */ }
 
           const ffmpegOpts: FfmpegOptions = {
             format: effectiveFormat as FfmpegOptions["format"],
@@ -298,8 +297,10 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
           await run(tempInputPath, outputPath, ffmpegOpts)
         } else {
           // --- Direct copy (same format, no transcoding) ---
-          if (sourceFormat === "mp3") {
-            // For MP3: use the fast manual ID3 tag writer (prepends tags to raw data)
+          if (sourceFormat === "mp3" && !companionLyrics) {
+            // For MP3 without lyrics: use the fast manual ID3 tag writer (prepends tags to raw data)
+            // writeID3Tags does not support lyrics embedding, so when companionLyrics
+            // is present we fall through to the FFmpeg remux path below.
             const audioWithTags = writeID3Tags(
               {
                 title: songName,
@@ -312,7 +313,7 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
               audio
             )
             await writeFile(outputPath, Buffer.from(audioWithTags))
-          } else if (coverImage || Object.keys(ffmpegMetadata).length > 0) {
+          } else if (coverImage || Object.keys(ffmpegMetadata).length > 0 || companionLyrics) {
             // For non-MP3 formats (FLAC, OGG, etc.) with metadata: use FFmpeg to remux
             // with metadata without re-encoding (-c copy).
             tempDir = mkdtempSync(join(tmpdir(), "fc-convert-"))
@@ -320,7 +321,7 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
             await writeFile(tempInputPath, Buffer.from(audio))
 
             let coverPath: string | null = null
-            try { coverPath = await writeCoverTemp(coverImage) } catch { /* non-fatal */ }
+            try { coverPath = await writeCoverTemp(coverImage, tempDir!) } catch { /* non-fatal */ }
 
             const args: string[] = ['-y', '-i', tempInputPath]
 

@@ -306,8 +306,8 @@ export async function run(
   }
 
   // Embed lyrics if provided
-  if (options.lyrics) {
-    args.push('-metadata', `lyrics=${options.lyrics}`)
+  if (lyrics) {
+    args.push('-metadata', `lyrics=${lyrics}`)
   }
 
   // Apply loudness normalization filter (EBU R128)
