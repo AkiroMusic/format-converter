@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from './i18n'
 import { useAppStore } from './store/useAppStore'
 import TitleBar from './components/TitleBar'
 import Sidebar from './components/Sidebar'
@@ -32,6 +33,7 @@ function App(): JSX.Element {
     durationMs: number
   } | null>(null)
   const ffmpegChecked = useRef(false)
+  const [filterNotice, setFilterNotice] = useState<string | null>(null)
 
   // ===== Load settings on mount =====
   useEffect(() => {
@@ -123,7 +125,26 @@ function App(): JSX.Element {
   // ===== Listen for files opened via OS file association =====
   useEffect(() => {
     const unsub = window.formatConverter?.onFilesOpenedFromOs((filePaths) => {
-      const entries = filePaths.map((path) => {
+      const supportedExtensions = [
+        '.ncm', '.kwm', '.kgm', '.kgma', '.vpr',
+        '.qmc0', '.qmc3', '.qmcflac', '.qmcogg', '.qmc1', '.qmc2', '.tkm',
+        '.mp3', '.flac', '.wav', '.m4a', '.aac', '.ogg', '.opus'
+      ]
+
+      const validPaths = filePaths.filter((path) => {
+        const dot = path.lastIndexOf('.')
+        if (dot === -1) return false
+        const ext = path.slice(dot).toLowerCase()
+        return supportedExtensions.includes(ext)
+      })
+
+      const filtered = filePaths.length - validPaths.length
+      if (filtered > 0) {
+        setFilterNotice(`${t('dropzone.filesFiltered', { count: filtered })}`)
+        setTimeout(() => setFilterNotice(null), 4000)
+      }
+
+      const entries = validPaths.map((path) => {
         const parts = path.replace(/\\/g, '/').split('/')
         const fileName = parts[parts.length - 1]
         return {
@@ -138,7 +159,7 @@ function App(): JSX.Element {
       useAppStore.getState().addFiles(entries)
     })
     return () => { unsub?.() }
-  }, [])
+  }, [t])
 
   // ===== Keyboard shortcuts =====
   useEffect(() => {
@@ -225,6 +246,29 @@ function App(): JSX.Element {
           </div>
         </main>
       </div>
+      {/* Filter notice toast */}
+      {filterNotice && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2000,
+            padding: '8px 20px',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-secondary)',
+            fontSize: '13px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          {filterNotice}
+        </div>
+      )}
+
       <PlayerBar />
 
       {/* Conversion Summary Modal */}
