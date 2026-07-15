@@ -86,6 +86,9 @@ interface AppSettings {
   presets: Preset[]
   concurrentLimit: number
   duplicateAction: string
+  embedCompanionLyrics: boolean
+  loudnormEnabled: boolean
+  loudnormTarget: number
 }
 
 const store = new SimpleStore<AppSettings>({
@@ -109,7 +112,10 @@ const store = new SimpleStore<AppSettings>({
     autoConcurrent: true,
     notificationsEnabled: true,
     selectedPreset: 'standard',
-    presets: DEFAULT_PRESETS
+    presets: DEFAULT_PRESETS,
+    embedCompanionLyrics: true,
+    loudnormEnabled: false,
+    loudnormTarget: -14
   }
 })
 

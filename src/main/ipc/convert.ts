@@ -15,7 +15,7 @@ import * as ncm from "../../core/ncmDecrypt"
 import * as decoders from "../../core/decoders"
 import { writeID3Tags } from "../../core/id3Writer"
 import { renderFilenameTemplate } from "../../core/template"
-import { run, runFfmpeg, FfmpegOptions } from "../ffmpeg"
+import { run, runFfmpeg, FfmpegOptions, extractLyrics } from "../ffmpeg"
 import { HistoryStore } from "../history"
 import { settingsStore } from "./settings"
 
@@ -46,6 +46,11 @@ const PLAIN_AUDIO_EXTS = new Set([
 // ---------------------------------------------------------------------------
 
 export function registerConvertHandlers(getMainWindow: () => BrowserWindow | null): void {
+  // ---- lyrics:extract ----
+  ipcMain.handle("lyrics:extract", async (_event, filePath: string): Promise<string | null> => {
+    return extractLyrics(filePath)
+  })
+
   // ---- convert:cancelAll ----
   ipcMain.handle("convert:cancelAll", async (): Promise<void> => {
     for (const [filePath, controller] of pendingConversions) {
@@ -236,6 +241,19 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
 
         sendProgress(0.65)
 
+        // --- Detect companion lyrics files ---
+        let companionLyrics: string | null = null
+        if (settingsStore.store.embedCompanionLyrics) {
+          const basePath = filePath.replace(/\.[^.]+$/, '')
+          const lrcPath = basePath + '.lrc'
+          const txtPath = basePath + '.txt'
+          if (existsSync(lrcPath)) {
+            companionLyrics = await readFile(lrcPath, 'utf-8')
+          } else if (existsSync(txtPath)) {
+            companionLyrics = await readFile(txtPath, 'utf-8')
+          }
+        }
+
         // --- Build metadata for FFmpeg ---
         const ffmpegMetadata: Record<string, string> = {}
         if (songName && songName !== "Unknown") ffmpegMetadata.title = songName
@@ -259,7 +277,10 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
             },
             signal: controller.signal,
             metadata: Object.keys(ffmpegMetadata).length > 0 ? ffmpegMetadata : undefined,
-            coverImagePath: coverPath ?? undefined
+            coverImagePath: coverPath ?? undefined,
+            lyrics: companionLyrics ?? undefined,
+            loudnormEnabled: settingsStore.store.loudnormEnabled,
+            loudnormTarget: settingsStore.store.loudnormTarget
           }
 
           if (bitrate) ffmpegOpts.bitrate = bitrate
@@ -316,6 +337,10 @@ export function registerConvertHandlers(getMainWindow: () => BrowserWindow | nul
 
             for (const [key, value] of Object.entries(ffmpegMetadata)) {
               if (value) args.push('-metadata', `${key}=${value}`)
+            }
+
+            if (companionLyrics) {
+              args.push('-metadata', `lyrics=${companionLyrics}`)
             }
 
             args.push('-c', 'copy', outputPath)
