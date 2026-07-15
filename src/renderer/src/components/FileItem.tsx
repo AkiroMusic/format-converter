@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useAppStore, FileEntry } from '../store/useAppStore'
 import UnlockAnimation from './UnlockAnimation'
 import ContextMenu, { type ContextMenuItem } from './ContextMenu'
+import LyricsDialog from './LyricsDialog'
 
 interface FileItemProps {
   file: FileEntry
@@ -31,6 +32,7 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
   const cancelFile = useAppStore((s) => s.cancelFile)
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const [lyricsDialogPath, setLyricsDialogPath] = useState<string | null>(null)
 
   const isSelected = selectedIds.includes(file.id)
 
@@ -108,6 +110,19 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
     }
 
     if (file.status === 'success' && file.outputPath) {
+      items.push({
+        label: t('lyrics.extract'),
+        onClick: () => setLyricsDialogPath(file.outputPath!),
+        icon: (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20v-6M6 20v-4M18 20v-8" />
+            <path d="M2 20h20" />
+            <path d="M2 4h20" />
+            <path d="M2 8h20" />
+            <path d="M2 12h20" />
+          </svg>
+        )
+      })
       items.push({
         label: t('actions.showInFolder'),
         onClick: () => { window.formatConverter.revealInFolder(file.outputPath!) },
@@ -428,6 +443,13 @@ function FileItem({ file, index }: FileItemProps): JSX.Element {
           y={contextMenu.y}
           items={buildContextMenuItems()}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {lyricsDialogPath && (
+        <LyricsDialog
+          filePath={lyricsDialogPath}
+          fileName={file.fileName}
+          onClose={() => setLyricsDialogPath(null)}
         />
       )}
     </>
