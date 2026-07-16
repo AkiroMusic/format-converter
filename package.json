@@ -1,6 +1,6 @@
 {
   "name": "format-converter",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Format Converter - Multi-format audio conversion tool",
   "main": "./out/main/index.js",
   "author": "Akiro",
