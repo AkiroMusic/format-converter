@@ -129,6 +129,7 @@ interface FormatConverterAPI {
   getSystemTheme(): Promise<'dark' | 'light'>
   onSystemThemeChanged(callback: (theme: 'dark' | 'light') => void): () => void
   setWindowTitle(title: string): Promise<void>
+  setAppIcon(theme: string): Promise<void>
 }
 
 declare global {

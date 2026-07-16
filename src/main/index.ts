@@ -3,7 +3,8 @@
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, nativeImage } from 'electron'
+import { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createWindow } from './window'
 import { registerDialogHandlers } from './ipc/dialog'
@@ -98,6 +99,19 @@ app.whenReady().then(async () => {
       mainWindow?.setTitle(title || 'Format Converter')
     })
 
+    // Dynamic app icon (taskbar / dock) based on theme
+    ipcMain.handle('window:setAppIcon', (_event, theme: string): void => {
+      if (!mainWindow) return
+      // 'light' and 'sepia' use light icon, everything else uses dark
+      const isLight = theme === 'light' || theme === 'sepia'
+      const iconFile = isLight ? 'light-icon.png' : 'dark-icon.png'
+      // Dev: ../../build/  — Production: process.resourcesPath/extra/
+      const iconPath = app.isPackaged
+        ? join(process.resourcesPath, 'extra', iconFile)
+        : join(__dirname, '../../build', iconFile)
+      mainWindow.setIcon(nativeImage.createFromPath(iconPath))
+    })
+
     // FFmpeg status IPC — return cached status (updated async below)
     ipcMain.handle('ffmpeg:getStatus', async (): Promise<FfmpegStatus> => {
       return ffmpegStatus
@@ -132,6 +146,16 @@ app.whenReady().then(async () => {
 
     // Create window first — show UI immediately without waiting for FFmpeg check
     mainWindow = createWindow()
+
+    // Set initial app icon (default: light icon for light/sepia themes, dark for others)
+    {
+      const initialTheme = 'dark' // sensible default before settings load
+      const iconFile = initialTheme === 'light' || initialTheme === 'sepia' ? 'light-icon.png' : 'dark-icon.png'
+      const iconPath = app.isPackaged
+        ? join(process.resourcesPath, 'extra', iconFile)
+        : join(__dirname, '../../build', iconFile)
+      try { mainWindow.setIcon(nativeImage.createFromPath(iconPath)) } catch { /* best-effort */ }
+    }
 
     // If launched via file association (first instance on Windows),
     // check process.argv for file paths

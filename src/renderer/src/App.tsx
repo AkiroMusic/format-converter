@@ -15,6 +15,7 @@ import PlayerBar from './components/PlayerBar'
 import SettingsPanel from './components/SettingsPanel'
 import HistoryView from './components/HistoryView'
 import ConversionSummaryModal from './components/ConversionSummaryModal'
+import StarBackground from './components/StarBackground'
 import './i18n'
 import './styles/tokens.css'
 
@@ -75,7 +76,7 @@ function App(): JSX.Element {
     }
   }, [])
 
-  // Apply theme on settings change
+  // Apply theme on settings change (in-app + system taskbar icon)
   useEffect(() => {
     const apply = async (): Promise<void> => {
       let theme = settings.theme
@@ -83,6 +84,7 @@ function App(): JSX.Element {
         theme = await resolveSystemTheme()
       }
       document.documentElement.dataset.theme = theme
+      window.formatConverter?.setAppIcon(theme)
     }
     apply()
   }, [settings.theme, resolveSystemTheme])
@@ -93,12 +95,15 @@ function App(): JSX.Element {
 
     const unsub = window.formatConverter?.onSystemThemeChanged((systemTheme) => {
       document.documentElement.dataset.theme = systemTheme
+      window.formatConverter?.setAppIcon(systemTheme)
     })
     // Also listen via CSS media query as fallback
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (): void => {
       if (settings.theme === 'system') {
-        document.documentElement.dataset.theme = mq.matches ? 'dark' : 'light'
+        const t = mq.matches ? 'dark' : 'light'
+        document.documentElement.dataset.theme = t
+        window.formatConverter?.setAppIcon(t)
       }
     }
     mq.addEventListener('change', handler)
@@ -236,9 +241,10 @@ function App(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col w-full h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+    <div className="flex flex-col w-full h-screen" style={{ backgroundColor: 'var(--bg-base)', position: 'relative' }}>
+      <StarBackground />
       <TitleBar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden" style={{ position: 'relative', zIndex: 1 }}>
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
         <main className="flex-1 flex flex-col overflow-hidden" style={{ maxWidth: '960px', margin: '0 auto', width: '100%' }}>
           <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--space-6)' }}>

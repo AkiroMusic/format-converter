@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/useAppStore'
 import LanguageSwitcher from './LanguageSwitcher'
+import AppIcon from './AppIcon'
 
 function TitleBar(): JSX.Element {
   const { t } = useTranslation()
@@ -79,8 +80,9 @@ function TitleBar(): JSX.Element {
       {/* macOS traffic light spacing */}
       {platform === 'darwin' && <div style={{ width: '78px', flexShrink: 0 }} />}
 
-      {/* Title — centered via flex */}
-      <div style={{ flex: 1, textAlign: 'center', overflow: 'hidden' }}>
+      {/* Title + icon — centered via flex */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', gap: '8px' }}>
+        <AppIcon size={20} />
         <span
           style={{
             fontFamily: "'Fraunces', serif",

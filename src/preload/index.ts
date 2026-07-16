@@ -179,7 +179,10 @@ const formatConverterAPI = {
   },
 
   setWindowTitle: (title: string): Promise<void> =>
-    ipcRenderer.invoke('window:setTitle', title)
+    ipcRenderer.invoke('window:setTitle', title),
+
+  setAppIcon: (theme: string): Promise<void> =>
+    ipcRenderer.invoke('window:setAppIcon', theme)
 }
 
 contextBridge.exposeInMainWorld('formatConverter', formatConverterAPI)
