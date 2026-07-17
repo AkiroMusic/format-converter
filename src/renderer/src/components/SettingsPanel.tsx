@@ -3,17 +3,54 @@
  * Copyright (c) 2026 Akiro. All rights reserved.
  */
 
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '../store/useAppStore'
 import LanguageSwitcher from './LanguageSwitcher'
 
 function InfoTooltip({ text }: { text: string }): JSX.Element {
   const [show, setShow] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState<React.CSSProperties>({})
+  const iconRef = useRef<HTMLSpanElement>(null)
+
+  const commonTipStyle: React.CSSProperties = {
+    padding: '8px 12px',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--surface-2)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+    fontSize: '12px',
+    lineHeight: 1.4,
+    whiteSpace: 'normal',
+    width: '260px',
+    zIndex: 10000,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    pointerEvents: 'none',
+    textAlign: 'left',
+    fontWeight: 400,
+    fontFamily: 'inherit'
+  }
+
   return (
     <span
+      ref={iconRef}
       style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '6px', cursor: 'pointer', verticalAlign: 'middle' }}
-      onMouseEnter={() => setShow(true)}
+      onMouseEnter={() => {
+        if (iconRef.current) {
+          const r = iconRef.current.getBoundingClientRect()
+          const spaceAbove = r.top
+          const spaceBelow = window.innerHeight - r.bottom
+          const tipWidth = 260
+          let left = r.left + r.width / 2 - tipWidth / 2
+          left = Math.max(8, Math.min(left, window.innerWidth - tipWidth - 8))
+          if (spaceAbove < 250 && spaceBelow > 250) {
+            setTooltipPos({ position: 'fixed', top: r.bottom + 6, left })
+          } else {
+            setTooltipPos({ position: 'fixed', top: r.top - 6, left, transform: 'translateY(-100%)' })
+          }
+        }
+        setShow(true)
+      }}
       onMouseLeave={() => setShow(false)}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>
@@ -21,31 +58,7 @@ function InfoTooltip({ text }: { text: string }): JSX.Element {
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
-      {show && (
-        <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 8px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '8px 12px',
-          borderRadius: 'var(--radius-sm)',
-          backgroundColor: 'var(--surface-2)',
-          border: '1px solid var(--border)',
-          color: 'var(--text-primary)',
-          fontSize: '12px',
-          lineHeight: 1.4,
-          whiteSpace: 'normal',
-          width: '260px',
-          zIndex: 1000,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          pointerEvents: 'none',
-          textAlign: 'left',
-          fontWeight: 400,
-          fontFamily: 'inherit'
-        }}>
-          {text}
-        </div>
-      )}
+      {show && <div style={{ ...tooltipPos, ...commonTipStyle }}>{text}</div>}
     </span>
   )
 }
@@ -362,7 +375,7 @@ function SettingsPanel(): JSX.Element {
       {/* FFmpeg Status & Path Selection */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
         <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
-          FFmpeg
+          {t('settings.ffmpeg')}
         </label>
         <div
           style={{
@@ -801,8 +814,9 @@ function SettingsPanel(): JSX.Element {
         {/* Compression Level (FLAC only) */}
         {settings.outputFormat === 'flac' && (
           <div style={{ marginBottom: 'var(--space-5)' }}>
-            <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
               {t('settings.compressionLevel')}: <strong>{settings.compressionLevel}</strong>
+              <InfoTooltip text={t('tooltip.compression')} />
             </label>
             <input
               type="range"
@@ -949,7 +963,7 @@ function SettingsPanel(): JSX.Element {
               <input
                 type="range"
                 min={-23}
-                max={-9}
+                max={-6}
                 step={0.5}
                 value={settings.loudnormTarget}
                 onChange={(e) => {
@@ -960,8 +974,8 @@ function SettingsPanel(): JSX.Element {
                 style={{ width: '100%', accentColor: 'var(--accent)', height: '6px', cursor: 'pointer' }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                <span>-23 LUFS (quieter)</span>
-                <span>-9 LUFS (louder)</span>
+                <span>{t('loudness.quieter')}</span>
+                <span>{t('loudness.louder')}</span>
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
                 {t('loudness.targetHint')}
@@ -973,8 +987,9 @@ function SettingsPanel(): JSX.Element {
 
       {/* Max Concurrent Conversions + Auto */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
-        <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
+        <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
           {t('settings.concurrentLimit')}: <strong>{settings.concurrentLimit}</strong>
+          <InfoTooltip text={t('tooltip.concurrentLimit')} />
         </label>
         <input
           type="range"
@@ -1014,8 +1029,9 @@ function SettingsPanel(): JSX.Element {
 
       {/* When File Exists */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
-        <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
+        <label style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>
           {t('settings.duplicateAction')}
+          <InfoTooltip text={t('tooltip.duplicateAction')} />
         </label>
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           {[
@@ -1061,6 +1077,7 @@ function SettingsPanel(): JSX.Element {
           }}
         >
           {t('settings.keyManagement')}
+          <InfoTooltip text={t('tooltip.keyManagement')} />
         </h3>
 
         {/* QMCv2 Ekey */}
@@ -1139,6 +1156,7 @@ function SettingsPanel(): JSX.Element {
           )}
         </div>
       </div>
+
     </div>
   )
 }

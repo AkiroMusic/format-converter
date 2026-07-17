@@ -60,7 +60,7 @@ function HistoryView(): JSX.Element {
           fontSize: '14px'
         }}
       >
-        Loading...
+        {t('status.loading')}
       </div>
     )
   }

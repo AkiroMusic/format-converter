@@ -99,16 +99,13 @@ app.whenReady().then(async () => {
       mainWindow?.setTitle(title || 'Format Converter')
     })
 
-    // Dynamic app icon (taskbar / dock) based on theme
-    ipcMain.handle('window:setAppIcon', (_event, theme: string): void => {
+    // Dynamic app icon (taskbar / dock) — single transparent icon
+    ipcMain.handle('window:setAppIcon', (_event): void => {
       if (!mainWindow) return
-      // 'light' and 'sepia' use light icon, everything else uses dark
-      const isLight = theme === 'light' || theme === 'sepia'
-      const iconFile = isLight ? 'light-icon.png' : 'dark-icon.png'
       // Dev: ../../build/  — Production: process.resourcesPath/extra/
       const iconPath = app.isPackaged
-        ? join(process.resourcesPath, 'extra', iconFile)
-        : join(__dirname, '../../build', iconFile)
+        ? join(process.resourcesPath, 'extra', 'icon.png')
+        : join(__dirname, '../../build', 'icon.png')
       mainWindow.setIcon(nativeImage.createFromPath(iconPath))
     })
 
@@ -147,13 +144,11 @@ app.whenReady().then(async () => {
     // Create window first — show UI immediately without waiting for FFmpeg check
     mainWindow = createWindow()
 
-    // Set initial app icon (default: light icon for light/sepia themes, dark for others)
+    // Set initial app icon — single transparent icon
     {
-      const initialTheme = 'dark' // sensible default before settings load
-      const iconFile = initialTheme === 'light' || initialTheme === 'sepia' ? 'light-icon.png' : 'dark-icon.png'
       const iconPath = app.isPackaged
-        ? join(process.resourcesPath, 'extra', iconFile)
-        : join(__dirname, '../../build', iconFile)
+        ? join(process.resourcesPath, 'extra', 'icon.png')
+        : join(__dirname, '../../build', 'icon.png')
       try { mainWindow.setIcon(nativeImage.createFromPath(iconPath)) } catch { /* best-effort */ }
     }
 

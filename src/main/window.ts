@@ -9,10 +9,10 @@ import { is } from '@electron-toolkit/utils'
 
 export function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
-    width: 960,
-    height: 680,
+    width: 1020,
+    height: 760,
     minWidth: 960,
-    minHeight: 640,
+    minHeight: 680,
     show: false,
     frame: false,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',

@@ -61,7 +61,8 @@ function FileList({ onConversionComplete }: Props): JSX.Element {
       const totalSeconds = Math.ceil(etaMs / 1000)
       const minutes = Math.floor(totalSeconds / 60)
       const seconds = totalSeconds % 60
-      etaLabel = minutes > 0 ? `ETA: ~${minutes}m ${seconds}s` : `ETA: ~${seconds}s`
+      const timeStr = minutes > 0 ? `~${minutes}m ${seconds}s` : `~${seconds}s`
+      etaLabel = t('queue.eta', { time: timeStr })
     }
   }
 

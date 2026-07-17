@@ -324,6 +324,9 @@ function DropZone(): JSX.Element {
           <FormatBadge ext=".mp3/.flac/.wav" label="MP3/FLAC/WAV" desc={t('format.plainAudio')} />
           <FormatBadge ext=".m4a/.aac/.ogg/.opus" label="M4A/AAC/OGG/Opus" desc={t('format.plainAudio')} />
         </div>
+        <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '10px', lineHeight: 1.5, borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+          {t('dropzone.tip')}
+        </div>
       </div>
     </div>
   )

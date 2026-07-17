@@ -288,22 +288,45 @@ function App(): JSX.Element {
         />
       )}
 
-      {/* Copyright footer */}
+      {/* Footer bar */}
       <div
         style={{
-          height: '22px',
+          height: '26px',
+          padding: '0 var(--space-4)',
           fontSize: '11px',
           color: 'var(--text-tertiary)',
           backgroundColor: 'var(--surface-1)',
           borderTop: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           flexShrink: 0,
-          letterSpacing: '0.3px'
+          letterSpacing: '0.3px',
+          userSelect: 'none'
         }}
       >
-        &copy; 2026 Akiro
+        <span>&copy; 2026 Akiro (AkiroMusic)</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <a
+            href="https://akiromusic.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--accent)', textDecoration: 'none' }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+          >
+            akiromusic.com
+          </a>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <a
+            href="mailto:akiromusic@qq.com"
+            style={{ color: 'var(--accent)', textDecoration: 'none' }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+          >
+            akiromusic@qq.com
+          </a>
+        </span>
       </div>
     </div>
   )
